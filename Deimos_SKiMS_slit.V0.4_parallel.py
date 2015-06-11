@@ -77,6 +77,23 @@ if platform.system() == 'Linux':
 
 
 ###
+# Find best configuration # 
+import glob
+maxDist, bestMask = 1e10, ''
+for ii in glob.glob('MaskObj*dat'):
+  fileIn = open(ii, 'rb')
+  mask, maxDistTmp = pickle.load(fileIn)
+  fileIn.close()
+  #
+  if maxDistTmp < maxDist:
+    maxDist = maxDistTmp
+    bestMask = ii
+
+os.system('cp '+bestMask+' BestMask.dat')
+
+print "DONE"
+
+
 '''
 
 fileIn = open('MaskObj.dat', 'rb')
