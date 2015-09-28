@@ -7,6 +7,7 @@ Copyright: Nicola Pastorello (nicola.pastorello@gmail.com, 2015)
 
 
 _To run: 
+
 1.  Set initial galaxy parameters in the header section of 'Deimos_SKiMS_slit.V0.5.py'
 2.  run: "python Deimos_SKiMS_slit.V0.5.py"_
 
@@ -28,6 +29,6 @@ This can be:
 * assumed as a de Vaucouleurs profile
 
 Still to fix:
-*   [] decide which band to use to photometric profile in.
-*   [] retrieving galaxy parameters from dictionary
+*   [ ] decide which band to use to photometric profile in.
+*   [ ] retrieving galaxy parameters from dictionary
 
