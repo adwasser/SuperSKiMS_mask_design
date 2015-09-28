@@ -1,10 +1,10 @@
 #### SuperSKiMS_mask_design
 ###### Python code to retrieve an optimal mask design for SKiMS on DEIMOS. 
 
-###### Latest version: Deimos_SKiMS_slit.V0.5.py - 28th September 2015
+####### Latest version: Deimos_SKiMS_slit.V0.5.py - 28th September 2015
 
-###### Copyright: Nicola Pastorello (2015)
-###### nicola.pastorello@gmail.com
+####### Copyright: Nicola Pastorello (2015)
+####### nicola.pastorello@gmail.com
 
    To run: 
    1) Set initial galaxy parameters in the header section of 'Deimos_SKiMS_slit.V0.5.py'
