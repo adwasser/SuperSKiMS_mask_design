@@ -102,6 +102,12 @@ def withinCones(xP, yP, q=0):
   else:
     return False
 
+def withinSlitRange(xP, yP, maxRadius):
+  if np.sqrt(xP**2.+yP**2) <= maxRadius:
+    return True
+  else:
+    return False
+
 
 
 def readProfileEllipse(filepath, pixelscale=1., mu_0 = 0.,
@@ -255,6 +261,7 @@ class Mask(generalClass):
     self.posCurrent = 0
     self.spaceSkySlits = 50 # Arcsec from the edges dedicated to sky slits
 #
+    self.max_dist_SKiMS_slits = 0.
     self.listSlits = []
     self.fig = None
     self.Reff_PA = getReff_PA() # R_eff along the mask direction
@@ -263,7 +270,7 @@ class Mask(generalClass):
   def createSlits(self, sersicPar=False, #[bm, Re, m]
                         SNmin=35.):
     self.posCurrent = separationSlits/2.
-    while self.posCurrent < numpy.max(self.xM)-self.spaceSkySlits:
+    while self.posCurrent < limitRadiusSlits*self.Reff_PA:#numpy.max(self.xM)-self.spaceSkySlits:
       if sersicPar:
         slitwidth = 1.
         exptime = 120.*60. #(2 hours)
@@ -275,15 +282,16 @@ class Mask(generalClass):
         lengthSlit = numpy.max([minWidthSlits, 0.0075/SersicFunct(self.posCurrent, 10, gal_Reff)])
         FluxDensity = SersicFunct(self.posCurrent, 10, gal_Reff)
       tmpObj = Slit()
-      tmpObj.createSlit(self.posCurrent, lengthSlit, SB=FluxDensity, xRange=[-limitRadiusSlits*self.Reff_PA, limitRadiusSlits*self.Reff_PA])
-      if self.posCurrent + lengthSlit < max(self.xM)-self.spaceSkySlits:
+      tmpObj.createSlit(self.posCurrent, lengthSlit, SB=FluxDensity)
+      if self.posCurrent + lengthSlit < limitRadiusSlits*self.Reff_PA:#max(self.xM)-self.spaceSkySlits:
         self.listSlits.append(tmpObj)
         self.posCurrent += lengthSlit + separationSlits
       else:
         tmpObj = Slit()
-        tmpObj.createSlit(self.posCurrent, max(self.xM)-self.spaceSkySlits-self.posCurrent-separationSlits/2., xRange=[-limitRadiusSlits*self.Reff_PA, limitRadiusSlits*self.Reff_PA])
+        tmpObj.createSlit(self.posCurrent, (limitRadiusSlits*self.Reff_PA)-self.posCurrent-separationSlits/2.)#max(self.xM)-self.spaceSkySlits-self.posCurrent-separationSlits/2.)
         self.listSlits.append(tmpObj)
         self.posCurrent += lengthSlit + separationSlits
+        self.max_dist_SKiMS_slits = self.posCurrent
     #
 #
   def createSkySlits(self, lengthSkySlit = 3.):
@@ -303,7 +311,9 @@ class Mask(generalClass):
     xtmp, ytmp, rtmp = [], [], []
     for ii in numpy.arange(len(gridPointsX)):
       for jj in numpy.arange(len(gridPointsX[0])):
-        if withinCones(gridPointsX[ii, jj], gridPointsY[ii, jj]) and withinMask(gridPointsX[ii, jj], gridPointsY[ii, jj]):  #Check if point within the angle cone and mask edges
+        if (withinCones(gridPointsX[ii, jj], gridPointsY[ii, jj]) and
+            withinMask(gridPointsX[ii, jj], gridPointsY[ii, jj]) and
+            withinSlitRange(gridPointsX[ii, jj], gridPointsY[ii, jj], self.max_dist_SKiMS_slits)):  #Check if point within the angle cone and mask edges
           distances = []
           for kk in self.listSlits:
             distances.append(numpy.sqrt((gridPointsX[ii, jj]-kk.centralCoords[0])**2+(gridPointsY[ii, jj]-kk.centralCoords[1])**2))

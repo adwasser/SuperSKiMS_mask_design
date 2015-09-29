@@ -83,8 +83,8 @@ listMasks[0][0].plotSlits(PAangle=listMasks[0][2])
 
 for ii in np.arange(len(listMasks)-1)+1:
   listMasks[ii][0].ax = listMasks[0][0].ax
-  listMasks[ii][0].plotMask(PAangle=listMasks[1][2])
-  listMasks[ii][0].plotSlits(PAangle=listMasks[1][2])
+  listMasks[ii][0].plotMask(PAangle=listMasks[ii][2])
+  listMasks[ii][0].plotSlits(PAangle=listMasks[ii][2])
 
 
 savefig('AllMasks.pdf', bbox_inches='tight')
