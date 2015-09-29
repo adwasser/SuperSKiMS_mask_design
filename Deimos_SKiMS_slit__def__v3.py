@@ -332,14 +332,16 @@ class Mask(generalClass):
 #
 
   def plotMask(self, PAangle=0.):
-    theta = np.radians(PAangle)
+    theta = np.radians(90.-PAangle)
     xMrot = numpy.array(self.xM)*numpy.cos(theta) - numpy.array(self.yM)*numpy.sin(theta)
     yMrot = numpy.array(self.xM)*numpy.sin(theta) + numpy.array(self.yM)*numpy.cos(theta)
 #    self.ax.plot(self.xM, self.yM, 'k-')
     self.ax.plot(xMrot, yMrot, 'k-')
+    limX = self.ax.set_xlim()
+    self.ax.set_xlim([limX[1], limX[0]])
 #
   def plotSlits(self, PAangle=0.):
-    theta = np.radians(PAangle)
+    theta = np.radians(90.-PAangle)
     # Separating Science slits from Sky slits
     selSKiMS, selSky = [], []
     for ii in self.listSlits:
@@ -366,7 +368,7 @@ class Mask(generalClass):
       #
 #
   def plotBoundaries(self, q=0, PAangle=0.):
-    theta = PAangle * numpy.pi/180.
+    theta = np.radians(90.-PAangle)
     xlimits = [self.xMin, self.xMax]
     yline1 = (numpy.tan((coneAngle/2.)*numpy.pi/180.+theta))*numpy.array(xlimits)+q
     yline2 = -(numpy.tan((coneAngle/2.)*numpy.pi/180.+theta))*numpy.array(xlimits)+q
