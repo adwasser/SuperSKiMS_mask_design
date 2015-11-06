@@ -28,6 +28,7 @@ This can be:
 3. assumed as a de Vaucouleurs profile
 
 Still to fix:
--[] decide which band to use to photometric profile in.
--[] retrieving galaxy parameters from dictionary
 
+- decide which band to use to photometric profile in.
+- retrieving galaxy parameters from dictionary
+- homogenise the documentation regarding input SB profiles from file
