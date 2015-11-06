@@ -23,9 +23,10 @@ MonteCarlo approach. This configuration is the one that minimize the largest
 empty contiguous area within the mask. 
 The length of the slits depends on the galaxy surface brightness **(still to be properly implemented**). 
 This can be:
-1. provided as an input txt file
-2. provided as a Sersic profile, given the profile's parameters
-3. assumed as a de Vaucouleurs profile
+
+1 provided as an input txt file
+2 provided as a Sersic profile, given the profile's parameters
+3 assumed as a de Vaucouleurs profile
 
 Still to fix:
 
