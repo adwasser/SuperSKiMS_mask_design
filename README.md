@@ -24,9 +24,9 @@ empty contiguous area within the mask.
 The length of the slits depends on the galaxy surface brightness **(still to be properly implemented**). 
 This can be:
 
-1 provided as an input txt file
-2 provided as a Sersic profile, given the profile's parameters
-3 assumed as a de Vaucouleurs profile
+- provided as an input txt file
+- provided as a Sersic profile, given the profile's parameters
+- assumed as a de Vaucouleurs profile
 
 Still to fix:
 
