@@ -1,7 +1,7 @@
 #### SuperSKiMS_mask_design
 ###### Python code to retrieve an optimal mask design for SKiMS on DEIMOS. 
 
-###### Latest version: Deimos_SKiMS_slit.V0.7.py - 29th September 2015
+###### Latest version: Deimos_SKiMS_slit.V0.8.py - 16th November 2015
 
 Copyright: Nicola Pastorello (nicola.pastorello@gmail.com, 2015)
 
@@ -23,11 +23,14 @@ MonteCarlo approach. This configuration is the one that minimize the largest
 empty contiguous area within the mask. 
 The length of the slits depends on the galaxy surface brightness **(still to be properly implemented**). 
 This can be:
-1. provided as an input txt file
-2. provided as a Sersic profile, given the profile's parameters
-3. assumed as a de Vaucouleurs profile
+
+- provided as an input txt file
+- provided as a Sersic profile, given the profile's parameters
+- assumed as a de Vaucouleurs profile
 
 Still to fix:
--[] decide which band to use to photometric profile in.
--[] retrieving galaxy parameters from dictionary
+
+- decide which band to use to photometric profile in.
+- retrieving galaxy parameters from dictionary
+- homogenise the documentation regarding input SB profiles from file
 

@@ -51,7 +51,7 @@ def Coords2String(coordValue, #Converts degrees into string dd:amm:ass
     am = int(float_am)
     ass = (float_am-am)*60.
     #
-    outString = signDD+str(dd)+':'+str(am)+':'+str(ass)
+    outString = signDD+str(np.abs(dd))+':'+str(np.abs(am))+':'+str(np.abs(ass))
     return outString
 
 

@@ -110,10 +110,10 @@ def findBestMask(iterations=100., maxDist = 1000., realProfilePath=False):
     print "\r DONE!"
     if tmpDist < maxDist:
       maxDist = tmpDist
-    ## Adding Sky Slits
-    tmpObj.createSkySlits()
-    #
-    Mask = tmpObj
+      ## Adding Sky Slits
+      tmpObj.createSkySlits()
+      #
+      Mask = tmpObj
     t2 = time.time()
     print "Elapsed time: "+str(t2-t1)
     print "###########\n"

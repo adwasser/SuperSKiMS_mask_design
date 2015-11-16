@@ -38,7 +38,7 @@ def status(proc):
 
 def worker(inputqueuenumber):
   """Running the different 100 iterations"""
-  mask, maxDist = findBestMask(iterations = 100.,
+  mask, maxDist = findBestMask(iterations = 1000.,
                 realProfilePath='photprofs_Rband.txt') #It uses the real profile to define the slit length
   fileOut = open('MaskObj'+str(inputqueuenumber)+'.dat', 'wb')
   try:
