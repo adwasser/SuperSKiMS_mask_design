@@ -14,24 +14,9 @@ from Deimos_SKiMS_slit__def__v4 import *
 ## System-wide variables ##
 ###########################
 
-# '''
-# NGC 1407 - 2 masks - PA = 20 and 110 degrees
-# '''
-
-# __builtins__.verbosity = False	#If True, keeps the verbosity level high
-# __builtins__.graphicOutput = False	#If True, shows the final plot at the end of every ScoBen iteration
-
-# __builtins__.separationSlits = 0.4	#Standard separation between slits in arcsec
-# __builtins__.minWidthSlits = 3.		#Minimum slit width in arcsec
-
-# __builtins__.numberMasks = 2.
-# __builtins__.limitRadiusSlits = 5. # Max distance for SS slits in R_eff
-
-# __builtins__.gal_Reff = 63.   #Effective radius of galaxy  (from Brodie+14)
-# __builtins__.gal_ba = 1.-0.03   #Effective radius of galaxy  (from Brodie+14)
-# __builtins__.gal_RA = '03:40:11.8' # (from NED)
-# __builtins__.gal_Dec = '-18:34:48' # (from NED)
-# __builtins__.gal_PA = 35. # PA of the galaxy (from Brodie+14)
+'''
+NGC 1407 - 2 masks - PA = 20 and 110 degrees
+'''
 
 __builtins__.verbosity = False	#If True, keeps the verbosity level high
 __builtins__.graphicOutput = False	#If True, shows the final plot at the end of every ScoBen iteration
@@ -42,11 +27,12 @@ __builtins__.minWidthSlits = 3.		#Minimum slit width in arcsec
 __builtins__.numberMasks = 2.
 __builtins__.limitRadiusSlits = 5. # Max distance for SS slits in R_eff
 
-__builtins__.gal_Reff = 16.6   #Effective radius of galaxy  (from Atlas3d)
-__builtins__.gal_ba = 0.75   #Effective radius of galaxy  (from Atlas3d)
-__builtins__.gal_RA = '12:35:37.9' # from NED
-__builtins__.gal_Dec = '+12:15:50' # (from NED)
-__builtins__.gal_PA = 180 + 70.5 # PA of the galaxy (from Atlas3d), rotated to match ideal alignment stars
+__builtins__.gal_Reff = 63.   #Effective radius of galaxy  (from Brodie+14)
+__builtins__.gal_ba = 1.-0.03   #Effective radius of galaxy  (from Brodie+14)
+__builtins__.gal_RA = '03:40:11.8' # (from NED)
+__builtins__.gal_Dec = '-18:34:48' # (from NED)
+__builtins__.gal_PA = 35. # PA of the galaxy (from Brodie+14)
+
 
 ''' still to define in which band the mu_0 is'''
 __builtins__.mu_0 =  15.# I-band SB of the galaxy in the centre (this is from Spolaor+08)
@@ -57,12 +43,12 @@ __builtins__.mu_0 =  15.# I-band SB of the galaxy in the centre (this is from Sp
 
 __builtins__.coneAngle = 180./(numberMasks) #Angle of cone containing the slits
 
-numberIterations = 1e3
+numberIterations = 1e2
 
 listMasks = []
 for ii in np.arange(numberMasks):
-  __builtins__.mask_PA = gal_PA+ii*180./numberMasks # PA of the mask
-  #__builtins__.mask_PA = 20.+ii*180./numberMasks # PA of the mask
+  #__builtins__.mask_PA = gal_PA+ii*180./numberMasks # PA of the mask
+  __builtins__.mask_PA = 20.+ii*180./numberMasks # PA of the mask
   mask_Tmp, maxDist_Tmp = findBestMask(iterations = numberIterations, #realProfilePath = profilePath,
   #  sersicParameters = [],
    # bagal=gal_ba, PAgal=gal_PA, PAmask=mask_PA,
