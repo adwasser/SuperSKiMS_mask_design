@@ -1,13 +1,7 @@
 ## DEIMOS mask - SKiMS fill
 import numpy as np
-import asciidata, random, time, copy, os, glob
-try:
-  import cPickle as pickle
-except:
-  import pickle
+import time
 
-from pylab import *
-from sys import stdout
 
 # v.2 - 25/09/15  - Addition of extra option for Sersic profile
 #                 - Addition 'saving catalog' function
@@ -56,7 +50,8 @@ def Coords2String(coordValue, #Converts degrees into string dd:amm:ass
     outString = signDD+str(np.abs(dd))+':'+str(np.abs(am))+':'+str(np.abs(ass))
     return outString
 
-def relativeCoordinates(RA, Dec, RA_gal, Dec_gal): #In degrees
+def relativeCoordinates(RA, Dec, RA_gal, Dec_gal):
+    #In degrees
     # From Huchra+91
     DeltaRA = np.sin(np.radians(RA-RA_gal))*np.cos(np.radians(Dec))
     DeltaDec = (np.sin(np.radians(Dec))*np.cos(np.radians(Dec_gal)) -
@@ -64,24 +59,19 @@ def relativeCoordinates(RA, Dec, RA_gal, Dec_gal): #In degrees
                 np.sin(np.radians(Dec_gal)))
     return np.degrees(DeltaRA), np.degrees(DeltaDec)
 
-def SersicFunct(r, I0, Re, m=4, bm = 7.67): #if m == 1 is an exponential function, m == 4 is a de Vaucouleur profile (UPDATED VERSION WITH I0)
+def SersicFunct(r, I0, Re, m=4, bm = 7.67):
+    #if m == 1 is an exponential function, m == 4 is a de Vaucouleur profile (UPDATED VERSION WITH I0)
     #bm = 7.67  #Cai et al. 2008
     r = np.array(r)*1.
     return I0 * (np.e**(-bm*((r/float(Re))**(1./m))))
 
 def withinMask(xP, yP):
     xP = np.abs(xP)
-    if yP > -1 and xP > 360.:
-        if (360. <= xP < 420.) and yP < -0.85*xP+452.:
-            return True
-        elif (420. <= xP < 460.) and yP < -1.075*xP+546.5:
-            return True
-        elif (460. <= xP < 498.) and yP < -1.9347368421*xP+693.5789473684:
-            return True
-        else:
-            return False
-    else:
-        return True
+    a = (yP < -1) | (xP < 360)
+    b = (360 <= xP) & (xP < 420) & (yP < -0.85*xP+452.)
+    c = (420. <= xP) & (xP < 460.) & (yP < -1.075*xP+546.5)
+    d = (460. <= xP) & (xP < 498.) & (yP < -1.9347368421*xP+693.5789473684)
+    return a | b | c | d
 
 def withinCones(xP, yP, coneAngle, q=0):
     xP = np.abs(xP)
@@ -109,9 +99,9 @@ def createGrid(xRange, yRange, resolution):
 class Mask:
     def __init__(self, gal_Reff, gal_ba, gal_RA, gal_Dec, gal_PA, mask_PA, coneAngle, separationSlits, minWidthSlits,
                  limitRadiusSlits=5):
-        self.xM = xM = [-498.,-498.,360.,420.,460.,498., 498.,-498.,-498.,
-                        -460.,-420.,-360., 259.7, 259.7, 259.7, 249.3, 249.3,
-                        5.2,   5.2,  -5.2,  -5.2,-249.3,-249.3,-259.7,-259.7]
+        self.xM = [-498.,-498.,360.,420.,460.,498., 498.,-498.,-498.,
+                   -460.,-420.,-360., 259.7, 259.7, 259.7, 249.3, 249.3,
+                   5.2,   5.2,  -5.2,  -5.2,-249.3,-249.3,-259.7,-259.7]
         self.yM = [-146.,  146.,  146.,   95.,   52.,   -1., -146., -146.,   -1.,
                    52.,   95.,  146.,  146., -146.,  146.,  146., -146., -146.,
                    146.,  146., -146., -146.,  146.,  146., -146.]
@@ -176,7 +166,9 @@ class Mask:
         #Define list of points within the cones
         gridPointsX, gridPointsY = createGrid([0., self.xMax], [self.yMin, self.yMax], resolution)
         x, y = np.array(zip(gridPointsX.flatten(), gridPointsY.flatten())).T
-        pick = withinCones(x, y, self.coneAngle) & withinSlitRange(x, y, self.max_dist_SKiMS_slits)
+        pick = (withinCones(x, y, self.coneAngle) &
+                withinSlitRange(x, y, self.max_dist_SKiMS_slits) &
+                withinMask(x, y))
         
         x_slits = np.tile(self.xcoords, (x[pick].size, 1)).T
         y_slits = np.tile(self.ycoords, (y[pick].size, 1)).T
@@ -222,6 +214,12 @@ class Mask:
         np.savetxt(pathOutput, np.transpose((Xmin, Xmax, Ymin, Ymax)),
                    delimiter='\t', header='Xmin\tXmax\tYmin\tYmax')
 
+    def write_regions(self, output):
+		pass
+        # with open(output, 'w') as f:
+		# 	pass
+        
+        
     def createOutputDSIM(self, pathOutput='./catSS.txt', save_slit_length=False):
         # It creates a catalog object for DSIM
         # All the slits are placed/rotated respect to their center and the 2 semi-  lengths are provided
@@ -266,8 +264,7 @@ class Mask:
             slitPA_str = str(round(self.mask_PA+5., 2))
             len1_str, len2_str = str(round(ii.length/2., 2)), str(round(ii.length/2.,2))
             slitWidth_str = '1'
-            #
-            #SAVE
+
             if save_slit_length:
                 listStrings.append(nameSlit_str+'\t'+RASlit_str+'\t'+DecSlit_str+'\t' +
                                    equinox_str+'\t'+mag_str+'\t'+passband_str+'\t'+pcode_str +
@@ -283,9 +280,8 @@ class Mask:
         return True
 
 
-
 class Slit:
-#
+
     def __init__(self, pos0, length, coneAngle, y='random', xRange=[-498.,498.], yRange=[-146.,146.], target='SKiMS', SB=0.):
         self.x0 = pos0
         self.length = length
@@ -293,14 +289,13 @@ class Slit:
         self.SB = SB
         self.type = target
         if y == 'random':
-            import random
             if coneAngle < 180:
                 elevation = (self.x0+self.length/2.)*np.tan((coneAngle/2.)*np.pi/180.)
             else:
                 elevation = yRange[1]
             flag = True
             while flag:
-                y = (random.random()*2.*elevation)-elevation
+                y = (np.random.rand()*2.*elevation)-elevation
                 if (yRange[0] < y < yRange[1]) and (withinMask(self.x1, y)):
                     self.y = y
                     flag = False
@@ -308,33 +303,22 @@ class Slit:
             self.y = y
         self.centralCoords = [np.mean([self.x0, self.x1]), self.y]
 
+    
 
 def findBestMask(gal_Reff, gal_ba, gal_RA, gal_Dec, gal_PA, mask_PA, coneAngle,
                  iterations=100., maxDist = 1000., separationSlits=0.4, minWidthSlits=3):
-    # print "locals", locals()
-    # print "globals", globals()
+    t1 = time.time()
     for ii in np.arange(iterations):
-        t1 = time.time()
-        print "\n###########"
-        print "Iteration "+str(int(ii+1))+"/"+str(int(iterations))+"\n"
-        print "Creating mask..."
         tmpObj = Mask(gal_Reff, gal_ba, gal_RA, gal_Dec, gal_PA, mask_PA, coneAngle, separationSlits, minWidthSlits)
-        print "\r DONE!"
-        print "Creating slits..."
         tmpObj.createSlits()
-        print "\r DONE!"
-        print "Finding largest empty space between the slits."
         tmpDist = tmpObj.getMaxEmptySpace()
-        print "\r DONE!"
         if tmpDist < maxDist:
             maxDist = tmpDist
             ## Adding Sky Slits
             tmpObj.createSkySlits()
             m = tmpObj
-        t2 = time.time()
-        print "Elapsed time: "+str(t2-t1)
-        print "###########\n"
-    # tmpObj.__del__()
+    t2 = time.time()
+    print str((t2 - t1) / iterations), 's per iteration'
     return m, maxDist
 
 
