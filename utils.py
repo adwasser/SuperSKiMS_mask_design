@@ -1,6 +1,7 @@
 ## DEIMOS mask - SKiMS fill
-import numpy as np
+import sys
 import time
+import numpy as np
 
 
 # v.2 - 25/09/15  - Addition of extra option for Sersic profile
@@ -31,6 +32,7 @@ def convAngCoord(angString):
 #
     return deg,arcmin,arcsec,arcsectot,deg_tot
 
+
 def Coords2String(coordValue, #Converts degrees into string dd:amm:ass
                   hh=False): # If True, the output is in hh:mm:ss
     if hh:
@@ -50,6 +52,7 @@ def Coords2String(coordValue, #Converts degrees into string dd:amm:ass
     outString = signDD+str(np.abs(dd))+':'+str(np.abs(am))+':'+str(np.abs(ass))
     return outString
 
+
 def relativeCoordinates(RA, Dec, RA_gal, Dec_gal):
     #In degrees
     # From Huchra+91
@@ -59,11 +62,13 @@ def relativeCoordinates(RA, Dec, RA_gal, Dec_gal):
                 np.sin(np.radians(Dec_gal)))
     return np.degrees(DeltaRA), np.degrees(DeltaDec)
 
+
 def SersicFunct(r, I0, Re, m=4, bm = 7.67):
     #if m == 1 is an exponential function, m == 4 is a de Vaucouleur profile (UPDATED VERSION WITH I0)
     #bm = 7.67  #Cai et al. 2008
     r = np.array(r)*1.
     return I0 * (np.e**(-bm*((r/float(Re))**(1./m))))
+
 
 def withinMask(xP, yP):
     xP = np.abs(xP)
@@ -73,31 +78,22 @@ def withinMask(xP, yP):
     d = (460. <= xP) & (xP < 498.) & (yP < -1.9347368421*xP+693.5789473684)
     return a | b | c | d
 
+
 def withinCones(xP, yP, coneAngle, q=0):
     xP = np.abs(xP)
     yline1 = (np.tan((coneAngle/2.)*np.pi/180.))*np.array(xP)+q
     yline2 = -(np.tan((coneAngle/2.)*np.pi/180.))*np.array(xP)+q
     return (yline2 < yP) & (yP < yline1)
 
+
 def withinSlitRange(xP, yP, maxRadius):
     return np.sqrt(xP**2.+yP**2) <= maxRadius
 
-def createGrid(xRange, yRange, resolution):
-    [xMin, xMax], [yMin, yMax] = xRange, yRange
-    gridX = np.empty((int((yMax-yMin)/resolution), int((xMax-xMin)/resolution)))
-    gridY = np.empty((int((yMax-yMin)/resolution), int((xMax-xMin)/resolution)))
-    for ii in np.arange(int((xMax-xMin)/resolution)):
-        gridY[:, ii] = np.arange(yMin, yMax, resolution)
-    for ii in np.arange(int((yMax-yMin)/resolution)):
-        gridX[ii, :] = np.arange(xMin, xMax, resolution)
-    return gridX, gridY
-
-#############
-## Classes ##
-#############
 
 class Mask:
-    def __init__(self, gal_Reff, gal_ba, gal_RA, gal_Dec, gal_PA, mask_PA, coneAngle, separationSlits, minWidthSlits,
+    
+    def __init__(self, gal_Reff, gal_ba, gal_RA, gal_Dec, gal_PA, mask_PA,
+                 coneAngle, separationSlits, minWidthSlits,
                  limitRadiusSlits=5):
         self.xM = [-498.,-498.,360.,420.,460.,498., 498.,-498.,-498.,
                    -460.,-420.,-360., 259.7, 259.7, 259.7, 249.3, 249.3,
@@ -130,21 +126,20 @@ class Mask:
         DPA_mask_gal = np.radians(gal_PA-mask_PA)
         self.Reff_PA = np.sqrt((Reff_major*np.cos(DPA_mask_gal))**2.+(Reff_minor*np.sin(DPA_mask_gal))**2.)
 
+
     def createSlits(self, SNmin=35.):
         self.posCurrent = self.separationSlits/2.
         while self.posCurrent < self.limitRadiusSlits*self.Reff_PA:#np.max(self.xM)-self.spaceSkySlits:
             lengthSlit = np.max([self.minWidthSlits, 0.0075/SersicFunct(self.posCurrent, 10, self.gal_Reff)])
             FluxDensity = SersicFunct(self.posCurrent, 10, self.gal_Reff)
             tmpObj = Slit(self.posCurrent, lengthSlit, self.coneAngle, SB=FluxDensity)
-            # tmpObj.createSlit(self.posCurrent, lengthSlit, SB=FluxDensity)
             if self.posCurrent + lengthSlit < self.limitRadiusSlits*self.Reff_PA:#max(self.xM)-self.spaceSkySlits:
                 self.listSlits.append(tmpObj)
                 self.posCurrent += lengthSlit + self.separationSlits
             else:
-                tmpObj = Slit(self.posCurrent, self.limitRadiusSlits * self.Reff_PA - self.posCurrent - self.separationSlits/2.,
+                tmpObj = Slit(self.posCurrent,
+                              self.limitRadiusSlits * self.Reff_PA - self.posCurrent - self.separationSlits/2.,
                               self.coneAngle)
-                # tmpObj.createSlit(self.posCurrent, (self.limitRadiusSlits*self.Reff_PA)-self.posCurrent-self.separationSlits/2.)
-                #max(self.xM)-self.spaceSkySlits-self.posCurrent-self.separationSlits/2.)
                 self.listSlits.append(tmpObj)
                 self.posCurrent += lengthSlit + self.separationSlits
                 self.max_dist_SKiMS_slits = self.posCurrent
@@ -152,20 +147,24 @@ class Mask:
         self.ycoords = np.array([slit.centralCoords[1] for slit in self.listSlits])
 
                 
-                
     def createSkySlits(self, lengthSkySlit = 3.):
         self.posCurrent = max(self.xM)-self.spaceSkySlits
         while self.posCurrent < np.max(self.xM):
             tmpObj = Slit(self.posCurrent, lengthSkySlit, self.coneAngle, target='Sky')
-            # tmpObj.createSlit(self.posCurrent, lengthSkySlit, target='Sky')
             self.listSlits.append(tmpObj)
             self.posCurrent += lengthSkySlit + self.separationSlits
 
-    def getMaxEmptySpace(self, resolution = 1.):
+
+    def getMaxEmptySpace(self, resolution = 0.1):
         # Creates circles and finds the maximum size circle that can be built without touching the slits
         #Define list of points within the cones
-        gridPointsX, gridPointsY = createGrid([0., self.xMax], [self.yMin, self.yMax], resolution)
-        x, y = np.array(zip(gridPointsX.flatten(), gridPointsY.flatten())).T
+
+        x_samples = np.arange(0, self.xMax, resolution)
+        y_samples = np.arange(self.yMin, self.yMax, resolution)
+
+        x = np.tile(x_samples, y_samples.shape)
+        y = np.tile(y_samples, (x_samples.size, 1)).T.flatten()
+        
         pick = (withinCones(x, y, self.coneAngle) &
                 withinSlitRange(x, y, self.max_dist_SKiMS_slits) &
                 withinMask(x, y))
@@ -181,25 +180,9 @@ class Mask:
         distances = np.amin(np.sqrt((x_slits - x_points)**2 +
                                     (y_slits - y_points)**2),
                             axis=0)
-        return np.amax(distances)
+        return np.sum(distances)
+
     
-        # ListCircles = []
-        # xtmp, ytmp, rtmp = [], [], []
-        
-        # for ii in np.arange(len(gridPointsX)):
-        #     for jj in np.arange(len(gridPointsX[0])):
-        #         #Check if point within the angle cone and mask edges      
-        #         if (withinCones(gridPointsX[ii, jj], gridPointsY[ii, jj], self.coneAngle) and
-        #             withinMask(gridPointsX[ii, jj], gridPointsY[ii, jj]) and
-        #             withinSlitRange(gridPointsX[ii, jj], gridPointsY[ii, jj], self.max_dist_SKiMS_slits)):  
-        #             distances = []
-        #             for kk in self.listSlits:
-        #                 distances.append(np.sqrt((gridPointsX[ii, jj]-kk.centralCoords[0])**2 +
-        #                                          (gridPointsY[ii, jj]-kk.centralCoords[1])**2))
-        #             ListCircles.append(np.nanmin(distances))
-        #             xtmp.append(gridPointsX[0][jj]); ytmp.append(gridPointsY[ii][0]); rtmp.append(np.nanmin(distances))
-        # return np.max(ListCircles)
-  
     def saveMaskSlits2txt(self, pathOutput=''):
         if not(pathOutput):
             pathOutput = './mask'+str(round(self.mask_PA))+'.txt'
@@ -214,10 +197,70 @@ class Mask:
         np.savetxt(pathOutput, np.transpose((Xmin, Xmax, Ymin, Ymax)),
                    delimiter='\t', header='Xmin\tXmax\tYmin\tYmax')
 
+
     def write_regions(self, output):
-		pass
-        # with open(output, 'w') as f:
-		# 	pass
+        '''
+        Save the current mask design to a ds9 regions file.
+
+        Parameters
+        ----------
+        output: str, filename to save regions
+        
+        Returns
+        -------
+        None
+        '''
+        with open(output, 'w') as f:
+            f.write('# Region file format: DS9 version 4.1\n')
+            f.write('global color=red move=0 select=0\n')
+            f.write('j2000\n')
+            RAgal_deg, Decgal_deg = convAngCoord(self.gal_RA)[4]*15., convAngCoord(self.gal_Dec)[4]
+            counter = 1
+            
+            for slit in self.listSlits:
+                # x_slit, y_slit = slit.centralCoords
+                # rotAngle = np.radians(90. - self.mask_PA)
+                # RAslit = RAgal_deg + (-x_slit * np.cos(rotAngle) +
+                #                        y_slit * np.sin(rotAngle)) / 3600.
+                # Decslit = Decgal_deg + (x_slit * np.sin(rotAngle) +
+                #                          y_slit * np.cos(rotAngle)) / 3600.
+                for side in ['L', 'R']:
+                    # Rotate with mask
+                    rotAngle = np.radians(90.-self.mask_PA)
+                    # RIGHT HAND SLIT
+                    if side == 'R':
+                        xSlit = (np.array([slit.x0, slit.x1])*np.cos(rotAngle) -
+                                 np.array([  slit.y, slit.y])*np.sin(rotAngle))
+                        ySlit = (np.array([slit.x0, slit.x1])*np.sin(rotAngle) +
+                                 np.array([  slit.y, slit.y])*np.cos(rotAngle))
+                    elif side == 'L':
+                        xSlit = (np.array([-slit.x0, -slit.x1])*np.cos(rotAngle) -
+                                 np.array  ([-slit.y, -slit.y])*np.sin(rotAngle))
+                        ySlit = (np.array([-slit.x0, -slit.x1])*np.sin(rotAngle) +
+                                 np.array  ([-slit.y, -slit.y])*np.cos(rotAngle))
+                    # Assign coordinates
+                    posX, posY = np.average([xSlit]), np.average([ySlit])
+                    RAslit, Decslit = RAgal_deg-posX/3600., Decgal_deg-posY/3600.
+                    RASlit_str = Coords2String(RAslit, hh=True)
+                    DecSlit_str = Coords2String(Decslit)
+
+                    if slit.type == 'SKiMS':
+                        nameSlit_str = 'SS_'+str(int(self.mask_PA))+'_'+str(counter)
+                    elif slit.type == 'Sky':
+                        nameSlit_str = 'SS_sky_'+str(int(self.mask_PA))+'_'+str(counter)
+
+                    slitPA_str = str(round(self.mask_PA+5., 2))
+                    len1_str, len2_str = str(round(slit.length/2., 2)), str(round(slit.length/2.,2))
+
+                    name_str = nameSlit_str
+                    ra_str = RASlit_str
+                    dec_str = DecSlit_str
+                    width_str = str(float(len1_str) + float(len2_str)) + '\"'
+                    height_str = '1.0\"'
+                    angle_str = str(float(slitPA_str) + 90.)
+                    f.write('box(' + ', '.join([ra_str, dec_str, width_str, height_str, angle_str]) +
+                            ') # text={' + name_str + '}\n')
+                    counter += 1
         
         
     def createOutputDSIM(self, pathOutput='./catSS.txt', save_slit_length=False):
@@ -241,40 +284,40 @@ class Mask:
                 posX, posY = np.average([xSlit]), np.average([ySlit])
                 RAslit, Decslit = RAgal_deg-posX/3600., Decgal_deg-posY/3600.
                 
-            if ii.type == 'SKiMS':
-                nameSlit_str = 'SS_'+str(int(self.mask_PA))+'_'+str(counter)
-                if ii.SB > 500:
-                    mag_str = str(20)   # Bogus number, just to prevent issues with DSIM
+                if ii.type == 'SKiMS':
+                    nameSlit_str = 'SS_'+str(int(self.mask_PA))+'_'+str(counter)
+                    if ii.SB > 500:
+                        mag_str = str(20)   # Bogus number, just to prevent issues with DSIM
+                    else:
+                        mag_str = str(round(ii.SB, 2))
+                    pcode_str = str(int(1001-counter))
+                    sample_str = '1'
+                    select_str = '1' #Pre-selected
+                elif ii.type == 'Sky':
+                    nameSlit_str = 'SS_sky_'+str(int(self.mask_PA))+'_'+str(counter)
+                    mag_str = '0'
+                    pcode_str = str(int(300-counter))
+                    sample_str = '3'
+                    select_str = '1' #Pre-selected
+
+                RASlit_str = Coords2String(RAslit, hh=True)
+                DecSlit_str = Coords2String(Decslit)
+                equinox_str = '2000'
+                passband_str = 'R'  #Not true
+                slitPA_str = str(round(self.mask_PA+5., 2))
+                len1_str, len2_str = str(round(ii.length/2., 2)), str(round(ii.length/2.,2))
+                slitWidth_str = '1'
+
+                if save_slit_length:
+                    listStrings.append(nameSlit_str+'\t'+RASlit_str+'\t'+DecSlit_str+'\t' +
+                                       equinox_str+'\t'+mag_str+'\t'+passband_str+'\t'+pcode_str +
+                                       '\t'+  sample_str+'\t'+select_str+'\t'+slitPA_str+'\t' +
+                                       len1_str+'\t'+len2_str+  '\t'+slitWidth_str+'\n')
                 else:
-                    mag_str = str(round(ii.SB, 2))
-                pcode_str = str(int(1001-counter))
-                sample_str = '1'
-                select_str = '1' #Pre-selected
-            elif ii.type == 'Sky':
-                nameSlit_str = 'SS_sky_'+str(int(self.mask_PA))+'_'+str(counter)
-                mag_str = '0'
-                pcode_str = str(int(300-counter))
-                sample_str = '3'
-                select_str = '1' #Pre-selected
-
-            RASlit_str = Coords2String(RAslit, hh=True)
-            DecSlit_str = Coords2String(Decslit)
-            equinox_str = '2000'
-            passband_str = 'R'  #Not true
-            slitPA_str = str(round(self.mask_PA+5., 2))
-            len1_str, len2_str = str(round(ii.length/2., 2)), str(round(ii.length/2.,2))
-            slitWidth_str = '1'
-
-            if save_slit_length:
-                listStrings.append(nameSlit_str+'\t'+RASlit_str+'\t'+DecSlit_str+'\t' +
-                                   equinox_str+'\t'+mag_str+'\t'+passband_str+'\t'+pcode_str +
-                                   '\t'+  sample_str+'\t'+select_str+'\t'+slitPA_str+'\t' +
-                                   len1_str+'\t'+len2_str+  '\t'+slitWidth_str+'\n')
-            else:
-                listStrings.append(nameSlit_str+'\t'+RASlit_str+'\t'+DecSlit_str+'\t'+
-                                   equinox_str+'\t'+mag_str+'\t'+passband_str+'\t'+pcode_str+
-                                   '\t'+  sample_str+'\t'+select_str+'\t'+slitPA_str+'\n')
-            counter += 1
+                    listStrings.append(nameSlit_str+'\t'+RASlit_str+'\t'+DecSlit_str+'\t'+
+                                       equinox_str+'\t'+mag_str+'\t'+passband_str+'\t'+pcode_str+
+                                       '\t'+  sample_str+'\t'+select_str+'\t'+slitPA_str+'\n')
+                counter += 1
         outputTable =  np.column_stack(listStrings)
         np.savetxt(pathOutput, outputTable, delimiter="", fmt="%s")
         return True
@@ -304,12 +347,12 @@ class Slit:
         self.centralCoords = [np.mean([self.x0, self.x1]), self.y]
 
     
-
 def findBestMask(gal_Reff, gal_ba, gal_RA, gal_Dec, gal_PA, mask_PA, coneAngle,
-                 iterations=100., maxDist = 1000., separationSlits=0.4, minWidthSlits=3):
+                 iterations=100., maxDist=np.inf, separationSlits=0.4, minWidthSlits=3):
     t1 = time.time()
     for ii in np.arange(iterations):
-        tmpObj = Mask(gal_Reff, gal_ba, gal_RA, gal_Dec, gal_PA, mask_PA, coneAngle, separationSlits, minWidthSlits)
+        tmpObj = Mask(gal_Reff, gal_ba, gal_RA, gal_Dec, gal_PA, mask_PA,
+                      coneAngle, separationSlits, minWidthSlits)
         tmpObj.createSlits()
         tmpDist = tmpObj.getMaxEmptySpace()
         if tmpDist < maxDist:
