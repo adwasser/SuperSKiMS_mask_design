@@ -21,7 +21,7 @@ from utils import findBestMask
 ###########################
 
 name = 'n4551'
-outdir = '/home/asher/work/gc_selection_march2016/n4551/'
+outdir = '../../gc_selection_march2016/n4551/'
 
 separationSlits = 0.4	#Standard separation between slits in arcsec
 minWidthSlits = 3.		#Minimum slit width in arcsec
@@ -42,7 +42,7 @@ gal_PA = 180 + 70.5 # PA of the galaxy (from Atlas3d), rotated to match ideal al
 
 coneAngle = 180./(numberMasks) #Angle of cone containing the slits
 
-numberIterations = 1e3
+numberIterations = 1e1
 
 if not os.path.isdir(outdir):
     os.mkdir(outdir)
@@ -61,15 +61,15 @@ for ii in np.arange(numberMasks):
                                          mask_PA=mask_PA,
                                          coneAngle=coneAngle)
     listMasks.append([mask_Tmp, maxDist_Tmp, mask_PA])
-    mask_Tmp.saveMaskSlits2txt(pathOutput=outdir + 'SS_' + name +
-                               '_' + str(ii) + '.txt')
+    # mask_Tmp.saveMaskSlits2txt(pathOutput=outdir + 'SS_' + name +
+    #                            '_' + str(ii) + '.txt')
     mask_Tmp.createOutputDSIM(pathOutput=outdir + 'SS_' + name
                               + '_' + str(round(mask_PA,1)) + '.in')
     mask_Tmp.write_regions(outdir + 'SS_' + name + '_' +
                            str(round(mask_PA, 1)) + '.reg')
 
-with open(outdir + 'SS_design_masks.dat', 'wb') as fileOut:
-    pickle.dump(listMasks, fileOut, pickle.HIGHEST_PROTOCOL)
+# with open(outdir + 'SS_design_masks.dat', 'wb') as fileOut:
+#     pickle.dump(listMasks, fileOut, pickle.HIGHEST_PROTOCOL)
 
 
 

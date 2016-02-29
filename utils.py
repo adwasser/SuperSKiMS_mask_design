@@ -180,7 +180,7 @@ class Mask:
         distances = np.amin(np.sqrt((x_slits - x_points)**2 +
                                     (y_slits - y_points)**2),
                             axis=0)
-        return np.sum(distances)
+        return np.amax(distances)
 
     
     def saveMaskSlits2txt(self, pathOutput=''):
