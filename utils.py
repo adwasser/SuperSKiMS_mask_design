@@ -277,65 +277,115 @@ class Mask:
                             ') # text={' + name_str + '}\n')
                     counter += 1
         
-        
-    def createOutputDSIM(self, pathOutput='./catSS.txt', save_slit_length=False):
+    def createOutputDSIM(self, pathOutput='./catSS.txt'):
         # It creates a catalog object for DSIM
         # All the slits are placed/rotated respect to their center and the 2 semi-  lengths are provided
-        RAgal_deg, Decgal_deg = convAngCoord(self.gal_RA)[4]*15., convAngCoord(self.gal_Dec)[4]
+        RAgal_deg, Decgal_deg = convAngCoord(gal_RA)[4]*15., convAngCoord(gal_Dec)[4]
         counter = 1
         listStrings = []
         for ii in self.listSlits:
             for side in ['L', 'R']:
                 # Rotate with mask
-                rotAngle = np.radians(90.-self.mask_PA)
+                rotAngle = np.radians(90.-mask_PA)
                 # RIGHT HAND SLIT
                 if side == 'R':
-                    xSlit = np.array([ii.x0, ii.x1])*np.cos(rotAngle) - np.array([  ii.y, ii.y])*np.sin(rotAngle)
-                    ySlit = np.array([ii.x0, ii.x1])*np.sin(rotAngle) + np.array([  ii.y, ii.y])*np.cos(rotAngle)
+                    xSlit = numpy.array([ii.x0, ii.x1])*numpy.cos(rotAngle) - numpy.array([  ii.y, ii.y])*numpy.sin(rotAngle)
+                    ySlit = numpy.array([ii.x0, ii.x1])*numpy.sin(rotAngle) + numpy.array([  ii.y, ii.y])*numpy.cos(rotAngle)
                 elif side == 'L':
-                    xSlit = np.array([-ii.x0, -ii.x1])*np.cos(rotAngle) - np.array  ([-ii.y, -ii.y])*np.sin(rotAngle)
-                    ySlit = np.array([-ii.x0, -ii.x1])*np.sin(rotAngle) + np.array  ([-ii.y, -ii.y])*np.cos(rotAngle)
+                    xSlit = numpy.array([-ii.x0, -ii.x1])*numpy.cos(rotAngle) - numpy.array  ([-ii.y, -ii.y])*numpy.sin(rotAngle)
+                    ySlit = numpy.array([-ii.x0, -ii.x1])*numpy.sin(rotAngle) + numpy.array  ([-ii.y, -ii.y])*numpy.cos(rotAngle)
+                #
                 # Assign coordinates
                 posX, posY = np.average([xSlit]), np.average([ySlit])
                 RAslit, Decslit = RAgal_deg-posX/3600., Decgal_deg-posY/3600.
-                
+                #
                 if ii.type == 'SKiMS':
-                    nameSlit_str = 'SS_'+str(int(self.mask_PA))+'_'+str(counter)
-                    if ii.SB > 500:
-                        mag_str = str(20)   # Bogus number, just to prevent issues with DSIM
-                    else:
-                        mag_str = str(round(ii.SB, 2))
+                    nameSlit_str = 'SS_'+str(int(mask_PA))+'_'+str(counter)
+                    mag_str = str(round(ii.SB, 2))
                     pcode_str = str(int(1001-counter))
                     sample_str = '1'
                     select_str = '1' #Pre-selected
                 elif ii.type == 'Sky':
-                    nameSlit_str = 'SS_sky_'+str(int(self.mask_PA))+'_'+str(counter)
+                    nameSlit_str = 'SS_sky_'+str(int(mask_PA))+'_'+str(counter)
                     mag_str = '0'
                     pcode_str = str(int(300-counter))
                     sample_str = '3'
                     select_str = '1' #Pre-selected
-
+                #
                 RASlit_str = Coords2String(RAslit, hh=True)
                 DecSlit_str = Coords2String(Decslit)
                 equinox_str = '2000'
                 passband_str = 'R'  #Not true
-                slitPA_str = str(round(self.mask_PA+5., 2))
+                slitPA_str = str(round(mask_PA+5., 2))
                 len1_str, len2_str = str(round(ii.length/2., 2)), str(round(ii.length/2.,2))
                 slitWidth_str = '1'
-
-                if save_slit_length:
-                    listStrings.append(nameSlit_str+'\t'+RASlit_str+'\t'+DecSlit_str+'\t' +
-                                       equinox_str+'\t'+mag_str+'\t'+passband_str+'\t'+pcode_str +
-                                       '\t'+  sample_str+'\t'+select_str+'\t'+slitPA_str+'\t' +
-                                       len1_str+'\t'+len2_str+  '\t'+slitWidth_str+'\n')
-                else:
-                    listStrings.append(nameSlit_str+'\t'+RASlit_str+'\t'+DecSlit_str+'\t'+
-                                       equinox_str+'\t'+mag_str+'\t'+passband_str+'\t'+pcode_str+
-                                       '\t'+  sample_str+'\t'+select_str+'\t'+slitPA_str+'\n')
+                #
+                #SAVE
+                listStrings.append(nameSlit_str+'\t'+RASlit_str+'\t'+DecSlit_str+'\t'+  equinox_str+'\t'+mag_str+'\t'+passband_str+'\t'+pcode_str+'\t'+  sample_str+'\t'+select_str+'\t'+slitPA_str+'\t'+len1_str+'\t'+len2_str+  '\t'+slitWidth_str+'\n')
                 counter += 1
-        outputTable =  np.column_stack(listStrings)
-        np.savetxt(pathOutput, outputTable, delimiter="", fmt="%s")
+                #
+                outputTable =  np.column_stack(listStrings)
+                np.savetxt(pathOutput, outputTable, delimiter="", fmt="%s")
         return True
+
+    # def createOutputDSIM(self, pathOutput='./catSS.txt', save_slit_length=False):
+    #     # It creates a catalog object for DSIM
+    #     # All the slits are placed/rotated respect to their center and the 2 semi-  lengths are provided
+    #     RAgal_deg, Decgal_deg = convAngCoord(self.gal_RA)[4]*15., convAngCoord(self.gal_Dec)[4]
+    #     counter = 1
+    #     listStrings = []
+    #     for ii in self.listSlits:
+    #         for side in ['L', 'R']:
+    #             # Rotate with mask
+    #             rotAngle = np.radians(90.-self.mask_PA)
+    #             # RIGHT HAND SLIT
+    #             if side == 'R':
+    #                 xSlit = np.array([ii.x0, ii.x1])*np.cos(rotAngle) - np.array([  ii.y, ii.y])*np.sin(rotAngle)
+    #                 ySlit = np.array([ii.x0, ii.x1])*np.sin(rotAngle) + np.array([  ii.y, ii.y])*np.cos(rotAngle)
+    #             elif side == 'L':
+    #                 xSlit = np.array([-ii.x0, -ii.x1])*np.cos(rotAngle) - np.array  ([-ii.y, -ii.y])*np.sin(rotAngle)
+    #                 ySlit = np.array([-ii.x0, -ii.x1])*np.sin(rotAngle) + np.array  ([-ii.y, -ii.y])*np.cos(rotAngle)
+    #             # Assign coordinates
+    #             posX, posY = np.average([xSlit]), np.average([ySlit])
+    #             RAslit, Decslit = RAgal_deg-posX/3600., Decgal_deg-posY/3600.
+                
+    #             if ii.type == 'SKiMS':
+    #                 nameSlit_str = 'SS_'+str(int(self.mask_PA))+'_'+str(counter)
+    #                 if ii.SB > 500:
+    #                     mag_str = str(20)   # Bogus number, just to prevent issues with DSIM
+    #                 else:
+    #                     mag_str = str(round(ii.SB, 2))
+    #                 pcode_str = str(int(1001-counter))
+    #                 sample_str = '1'
+    #                 select_str = '1' #Pre-selected
+    #             elif ii.type == 'Sky':
+    #                 nameSlit_str = 'SS_sky_'+str(int(self.mask_PA))+'_'+str(counter)
+    #                 mag_str = '0'
+    #                 pcode_str = str(int(300-counter))
+    #                 sample_str = '3'
+    #                 select_str = '1' #Pre-selected
+
+    #             RASlit_str = Coords2String(RAslit, hh=True)
+    #             DecSlit_str = Coords2String(Decslit)
+    #             equinox_str = '2000'
+    #             passband_str = 'R'  #Not true
+    #             slitPA_str = str(round(self.mask_PA+5., 2))
+    #             len1_str, len2_str = str(round(ii.length/2., 2)), str(round(ii.length/2.,2))
+    #             slitWidth_str = '1'
+
+    #             if save_slit_length:
+    #                 listStrings.append(nameSlit_str+'\t'+RASlit_str+'\t'+DecSlit_str+'\t' +
+    #                                    equinox_str+'\t'+mag_str+'\t'+passband_str+'\t'+pcode_str +
+    #                                    '\t'+  sample_str+'\t'+select_str+'\t'+slitPA_str+'\t' +
+    #                                    len1_str+'\t'+len2_str+  '\t'+slitWidth_str+'\n')
+    #             else:
+    #                 listStrings.append(nameSlit_str+'\t'+RASlit_str+'\t'+DecSlit_str+'\t'+
+    #                                    equinox_str+'\t'+mag_str+'\t'+passband_str+'\t'+pcode_str+
+    #                                    '\t'+  sample_str+'\t'+select_str+'\t'+slitPA_str+'\n')
+    #             counter += 1
+    #     outputTable =  np.column_stack(listStrings)
+    #     np.savetxt(pathOutput, outputTable, delimiter="", fmt="%s")
+    #     return True
 
 
 class Slit:
