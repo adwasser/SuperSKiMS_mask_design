@@ -20,29 +20,70 @@ from utils import findBestMask
 ## System-wide variables ##
 ###########################
 
-name = 'n4551'
-outdir = '../../gc_selection_march2016/n4551/'
+# # NGC 4551
+# name = 'n4551'
+# outdir = '../../gc_selection_march2016/n4551/'
+# gal_Reff = 16.6   #Effective radius of galaxy  (from Atlas3d)
+# gal_ba = 0.75   #Effective radius of galaxy  (from Atlas3d)
+# gal_RA = '12:35:37.9' # from NED
+# gal_Dec = '+12:15:50' # (from NED)
+# gal_PA = 180 + 70.5 # PA of the galaxy (from Atlas3d), rotated to match ideal alignment stars
+
+# # NGC 4550
+# name = 'n4550'
+# outdir = '../../gc_selection_march2016/n4550/'
+# gal_Reff = 15.5    #Effective radius of galaxy  (from Atlas3d)
+# gal_ba = 0.32   #Effective radius of galaxy  (from Atlas3d)
+# gal_RA = '12:35:30.6' # from NED
+# gal_Dec = '+12:13:15' # (from NED)
+# gal_PA = 179 # PA of the galaxy (from Atlas3d), rotated to match ideal alignment stars
+
+# # n4387
+# name = "n4387"
+# outdir = "../../gc_selection_march2016/n4387/"
+# gal_Reff = 15.85   #Effective radius of galaxy in arcsec (from Atlas3d)
+# gal_ba = 0.63   # axial ratio of galaxy  (from Atlas3d)
+# gal_RA = '12:25:41.7151' # from Atlas3d
+# gal_Dec = '+12:48:37.2924' # from Atlas3d
+# gal_PA = 143.4 # PA of the galaxy (from Atlas3d), rotated to match ideal alignment stars
+
+# # n3665
+# name = 'n3665'
+# outdir = '../../gc_selection_march2016/n3665/'
+# gal_Reff = 30.9   #Effective radius of galaxy in arcsec (from Atlas3d)
+# gal_ba = 0.78   # axial ratio of galaxy  (from Atlas3d)
+# gal_RA = '11:24:43.7' # from NED
+# gal_Dec = '+38:45:46' # from NED
+# gal_PA = 30.9 # PA of the galaxy (from Atlas3d)
+
+# n5475
+name = 'n5475'
+outdir = '../../gc_selection_march2016/n5475/'
+gal_Reff = 16.6   #Effective radius of galaxy in arcsec (from Atlas3d)
+gal_ba = 0.3   # axial ratio of galaxy  (from Atlas3d)
+gal_RA = '14:05:12.4' # from NED
+gal_Dec = '+55:44:31' # from NED
+gal_PA = 166.2 # PA of the galaxy (from Atlas3d)
+
+
+
+# general settings
 
 separationSlits = 0.4	#Standard separation between slits in arcsec
 minWidthSlits = 3.		#Minimum slit width in arcsec
 
 numberMasks = 2.
-# limitRadiusSlits = 5. # Max distance for SS slits in R_eff
+coneAngle = 180./(numberMasks) #Angle of cone containing the slits
+major_angle = 60
+minor_angle = 120
 
-gal_Reff = 16.6   #Effective radius of galaxy  (from Atlas3d)
-gal_ba = 0.75   #Effective radius of galaxy  (from Atlas3d)
-gal_RA = '12:35:37.9' # from NED
-gal_Dec = '+12:15:50' # (from NED)
-gal_PA = 180 + 70.5 # PA of the galaxy (from Atlas3d), rotated to match ideal alignment stars
+numberIterations = 1e3
+
 
 
 ##########
 ## MAIN ##
 ##########
-
-coneAngle = 180./(numberMasks) #Angle of cone containing the slits
-
-numberIterations = 5e2
 
 if not os.path.isdir(outdir):
     os.mkdir(outdir)
@@ -53,12 +94,11 @@ major_axis = True
 for ii in np.arange(numberMasks):
     mask_PA = gal_PA+ii*180./numberMasks # PA of the mask
     # for two masks
-    major_angle = 60
     if major_axis:
         mask_cone = major_angle
         major_axis = False
     else:
-        mask_cone = 2 * coneAngle - major_angle
+        mask_cone = minor_angle
     
     mask_Tmp, maxDist_Tmp = findBestMask(iterations=numberIterations,
                                          separationSlits=separationSlits,
