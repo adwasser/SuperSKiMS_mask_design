@@ -42,14 +42,24 @@ gal_PA = 180 + 70.5 # PA of the galaxy (from Atlas3d), rotated to match ideal al
 
 coneAngle = 180./(numberMasks) #Angle of cone containing the slits
 
-numberIterations = 1e1
+numberIterations = 5e2
 
 if not os.path.isdir(outdir):
     os.mkdir(outdir)
     
 listMasks = []
+major_axis = True
+
 for ii in np.arange(numberMasks):
     mask_PA = gal_PA+ii*180./numberMasks # PA of the mask
+    # for two masks
+    major_angle = 60
+    if major_axis:
+        mask_cone = major_angle
+        major_axis = False
+    else:
+        mask_cone = 2 * coneAngle - major_angle
+    
     mask_Tmp, maxDist_Tmp = findBestMask(iterations=numberIterations,
                                          separationSlits=separationSlits,
                                          minWidthSlits=minWidthSlits,
@@ -59,7 +69,7 @@ for ii in np.arange(numberMasks):
                                          gal_Dec=gal_Dec,
                                          gal_PA=gal_PA,
                                          mask_PA=mask_PA,
-                                         coneAngle=coneAngle)
+                                         coneAngle=mask_cone)
     listMasks.append([mask_Tmp, maxDist_Tmp, mask_PA])
     # mask_Tmp.saveMaskSlits2txt(pathOutput=outdir + 'SS_' + name +
     #                            '_' + str(ii) + '.txt')

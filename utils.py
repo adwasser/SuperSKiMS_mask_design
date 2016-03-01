@@ -2,6 +2,7 @@
 import sys
 import time
 import numpy as np
+from statsmodels.distributions import ECDF
 
 
 # v.2 - 25/09/15  - Addition of extra option for Sersic profile
@@ -90,6 +91,20 @@ def withinSlitRange(xP, yP, maxRadius):
     return np.sqrt(xP**2.+yP**2) <= maxRadius
 
 
+def uniform_statistic(x):
+    '''
+    Cramer-von Mises test statistic for a uniform distribution compared with
+    distribution x
+    '''
+    x = np.sort(x)
+    y = np.arange(1, x.size + 1)
+    dx = np.diff(x)
+    f = ECDF(x)
+    slope = x.size / x.ptp(x)
+    uniform_cdf = lambda x: slope * x
+    pass
+    
+
 class Mask:
     
     def __init__(self, gal_Reff, gal_ba, gal_RA, gal_Dec, gal_PA, mask_PA,
@@ -155,7 +170,7 @@ class Mask:
             self.posCurrent += lengthSkySlit + self.separationSlits
 
 
-    def getMaxEmptySpace(self, resolution = 0.1):
+    def getMaxEmptySpace(self, resolution=0.5):
         # Creates circles and finds the maximum size circle that can be built without touching the slits
         #Define list of points within the cones
 
