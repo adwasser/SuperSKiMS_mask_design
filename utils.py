@@ -2,7 +2,7 @@
 import sys
 import time
 import numpy as np
-from statsmodels.distributions import ECDF
+# from statsmodels.distributions import ECDF
 
 
 # v.2 - 25/09/15  - Addition of extra option for Sersic profile
@@ -91,18 +91,18 @@ def withinSlitRange(xP, yP, maxRadius):
     return np.sqrt(xP**2.+yP**2) <= maxRadius
 
 
-def uniform_statistic(x):
-    '''
-    Cramer-von Mises test statistic for a uniform distribution compared with
-    distribution x
-    '''
-    x = np.sort(x)
-    y = np.arange(1, x.size + 1)
-    dx = np.diff(x)
-    f = ECDF(x)
-    slope = x.size / x.ptp(x)
-    uniform_cdf = lambda x: slope * x
-    pass
+# def uniform_statistic(x):
+#     '''
+#     Cramer-von Mises test statistic for a uniform distribution compared with
+#     distribution x
+#     '''
+#     x = np.sort(x)
+#     y = np.arange(1, x.size + 1)
+#     dx = np.diff(x)
+#     f = ECDF(x)
+#     slope = x.size / x.ptp(x)
+#     uniform_cdf = lambda x: slope * x
+#     pass
     
 
 class Mask:
